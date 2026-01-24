@@ -1,76 +1,215 @@
-* {
-    font-family: Verdana, Tahoma , sans-serif;
+/* global.css
+   Full stylesheet for chat UI: scrollable message area, pinned composer,
+   "scroll to bottom" button, bubbles, loader, and responsive sizing.
+*/
+
+/* --- Page & root sizing --- */
+html, body, #__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
+/* allow background image to cover full screen but keep chat centered */
 body {
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center ;
-    align-items: center;
-    height: 100vh;
-    background-image: url("assets/BackgroundImg.jpg");
+  font-family: Verdana, Tahoma, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background-image: url("assets/BackgroundImg.jpg");
+  background-size: cover;
+  background-position: center;
 }
 
+/* main becomes chat-wrapper that occupies a large portion of viewport */
 main {
-    width: 80vh;
-    height: 80vh;
-    background: linear-gradient(to bottom, #f8f8f8,#cfcfcf);
-    border-radius: 15px;
-    display: flex;
-    align-items: center ;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    text-align: center;
-    color: #383838;
-
+  width: 80vh;                /* keep your chosen width */
+  max-width: 900px;           /* optional cap */
+  height: 90vh;               /* use most of viewport height */
+  background: linear-gradient(to bottom, #f8f8f8, #cfcfcf);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;     /* stack header/messages/composer vertically */
+  gap: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #383838;
 }
 
+/* messages container (parent that holds the scrollable area) */
 section {
-    width: 100%;
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden; /* inner .scrollable will handle scroll */
 }
 
+/* populated section (keeps layout intact) */
 section.populated {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    overflow: scroll;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  height: 100%;
 }
 
-.starter-text{
-    padding: 0 80px;
-
+/* === ACTUAL SCROLLABLE CONTAINER === */
+.scrollable {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow-y: auto;          /* critical */
+  -webkit-overflow-scrolling: touch;
+  padding-right: 8px;        /* avoid scrollbar overlapping content */
+  box-sizing: border-box;
 }
 
+/* message-list flows inside the scrollable area */
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 12px 8px;
+}
+
+/* keep starter text centered and padded */
+.starter-text {
+  padding: 0 24px;
+  margin-top: 8px;
+}
+
+/* Composer / form pinned to bottom of main */
 form {
-    height: 50px;
-    width: 100%;
-    display: flex; 
-    border-top: #828282 solid 2px ;
-    padding-top: 20px ;
-    border-radius: 0 0 10px 10px ;
-    overflow: hidden;
+  flex: 0 0 auto;          /* do not grow; sit at bottom */
+  width: 100%;
+  display: flex;
+  border-top: #828282 solid 2px;
+  padding-top: 12px;
+  border-radius: 0 0 10px 10px;
+  background: transparent;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
+/* composer input expands, send button fixed width */
 input.question-box {
-    width: 85%;
-    padding: 10px;
-    font-size: 15px;
-    color: #383838;
-    border: none;
+  flex: 1 1 auto;
+  padding: 10px;
+  font-size: 15px;
+  color: #383838;
+  border: none;
+  background: #fff;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
-input[type=submit]{
-    width: 15%;
-    padding: 10px;
-    font-size: 15px;
-    color: #fff;
-    border: none;
-    background-color: #441d8b;
+input[type=submit] {
+  flex: 0 0 16%;
+  padding: 10px;
+  font-size: 15px;
+  color: #fff;
+  border: none;
+  background-color: #441d8b;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-input:focus{
-    outline: none;
+input:focus {
+  outline: none;
+}
+
+/* --- bubbles (chat messages) --- */
+.bubble {
+  margin: 8px;
+  padding: 8px;
+  font-size: 15px;
+  border: none;
+  color: #383838;
+  box-shadow: #959da533 0 8px 24px;
+  max-width: 80%;
+  text-align: left;
+  word-break: break-word;
+}
+
+.bubble.user {
+  border-radius: 20px 20px 0 20px;
+  background-color: #E1F4FFFF;
+  margin-left: auto;
+}
+
+.bubble.assistant {
+  border-radius: 20px 20px 20px 0;
+  background-color: #dce7ff;
+}
+
+/* suggestions & loader */
+.prompt-suggestion-row {
+  width: 100%;
+}
+
+.prompt-suggestion-button {
+  margin: 8px;
+  padding: 8px;
+  font-size: 15px;
+  border: none;
+  background-color: #fff;
+  border-radius: 10px;
+  color: #383838;
+  box-shadow: #959da533 0 8px 24px;
+}
+
+/* loader animation */
+.loader {
+  margin: 10px;
+  width: 60px;
+  aspect-ratio: 4;
+  background:
+    no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 0% 50%,
+    no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 50% 50%,
+    no-repeat radial-gradient(circle closest-side, #383838 90%, #0000) 100% 50%;
+  background-size: calc(100%/3) 100%;
+  animation: loading 1s infinite linear;
+}
+
+@keyframes loading {
+  33% { background-size: calc(100%/3) 0%, calc(100%/3) 100%, calc(100%/3) 100%; }
+  50% { background-size: calc(100%/3) 100%, calc(100%/3) 0%,   calc(100%/3) 100%; }
+  66% { background-size: calc(100%/3) 100%, calc(100%/3) 100%, calc(100%/3) 0%; }
+}
+
+/* scroll-to-bottom floating button */
+.scroll-to-bottom-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 94px; /* above the form area; adjust if your composer height differs */
+  z-index: 60;
+  background: #441d8b;
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* responsive tweaks */
+@media (max-width: 800px) {
+  main {
+    width: 92vw;
+    height: 92vh;
+    padding: 12px;
+  }
+  input[type=submit] {
+    flex: 0 0 24%;
+  }
+  .scroll-to-bottom-btn {
+    right: 12px;
+    bottom: 110px;
+  }
 }
